@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Suivi colis — Démo</title>
+    <style>
+      body {
+        font-family: system-ui, -apple-system, Segoe UI, Roboto,
+          'Helvetica Neue', Arial;
+        margin: 40px;
+        background: #f7f7f8;
+      }
+      .card {
+        background: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 6px 18px rgba(20, 20, 40, 0.06);
+        max-width: 620px;
+        margin: 0 auto;
+      }
+      h1 {
+        margin-top: 0;
+        font-size: 18px;
+      }
+      label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+      }
+      input[type='text'] {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 16px;
+      }
+      button {
+        margin-top: 12px;
+        padding: 10px 14px;
+        border-radius: 6px;
+        border: 0;
+        background: #0b74de;
+        color: #fff;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      small {
+        display: block;
+        margin-top: 8px;
+        color: #8b620a;
+      }
+      output {
+        display: block;
+        margin-top: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="card" role="main">
+      <h1>Entrer un numéro de colis</h1>
+      <form id="tracking-form">
+        <label for="tracking-number">Numéro de colis</label>
+        <input
+          id="tracking-number"
+          name="tracking-number"
+          type="text"
+          inputmode="text"
+          autocomplete="off"
+          placeholder="Ex: AB123456789CD"
+        />
+        <button type="submit">Soumettre</button>
+        <small id="error"></small>
+      </form>
+      <output>
+        <ul>
+          <li>Numéro de colis : <span id="current-tracking-number"></span></li>
+          <li>
+            Résultat de la détection :
+            <pre id="current-carrier"></pre>
+          </li>
+          <li>Lien de suivi : <a id="track-link" href=""></a></li>
+        </ul>
+      </output>
+    </main>
+
+    <script type="module">
+      import { detecte } from '../detect.js';
+      import { getLienSuiviChronopost } from '../transporteurs/chronopost.js';
+      import { getLienSuiviColissimo } from '../transporteurs/colissimo.js';
+      import { getLienSuiviGls } from '../transporteurs/gls.js';
+
+      const form = document.getElementById('tracking-form');
+      const input = document.getElementById('tracking-number');
+      const error = document.getElementById('error');
+      const numeroSuiviOutput = document.getElementById(
+        'current-tracking-number'
+      );
+      const carrierOutput = document.getElementById('current-carrier');
+      const trackLinkOutput = document.getElementById('track-link');
+
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        error.textContent = '';
+        const value = input.value.trim();
+        if (!value) {
+          error.textContent = 'Le champ est vide — entrez un numéro de colis.';
+          return;
+        }
+        const numeroSuivi = value.toUpperCase();
+
+        numeroSuiviOutput.textContent = numeroSuivi;
+
+        const result = detecte(numeroSuivi);
+        carrierOutput.textContent = JSON.stringify(result, null, 2);
+
+        if (Object.values(result).some((r) => r.matched)) {
+          const matched = Object.values(result).find((r) => r.matched);
+          trackLinkOutput.textContent = `suivre mon colis ${matched.transporteur}`;
+
+          switch (matched.transporteur) {
+            case 'Chronopost':
+              trackLinkOutput.href = getLienSuiviChronopost(numeroSuivi);
+              return;
+            case 'Colissimo':
+              trackLinkOutput.href = getLienSuiviColissimo(numeroSuivi);
+              return;
+            case 'GLS':
+              trackLinkOutput.href = getLienSuiviGls(numeroSuivi);
+              return;
+          }
+        }
+      });
+    </script>
+  </body>
+</html>

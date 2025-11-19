@@ -1,0 +1,13 @@
+{
+  "name": "detecteur-transporteur-fr",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "demo": "serve",
+    "test": "vitest"
+  },
+  "devDependencies": {
+    "serve": "^14.2.5",
+    "vitest": "^4.0.5"
+  }
+}
