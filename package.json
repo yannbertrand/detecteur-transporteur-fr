@@ -8,6 +8,6 @@
   },
   "devDependencies": {
     "serve": "14.2.5",
-    "vitest": "4.0.17"
+    "vitest": "4.0.18"
   }
 }
